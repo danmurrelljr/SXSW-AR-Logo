@@ -17,6 +17,7 @@ class ViewController: UIViewController {
     
     let configuration = ARWorldTrackingConfiguration()
     var logo: SCNNode?      // only one logo at a time
+    let skins = [0, 1, 2, 3, 4]
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -27,9 +28,13 @@ class ViewController: UIViewController {
         configuration.planeDetection = .horizontal
         
         self.sceneView.autoenablesDefaultLighting = true
+        self.sceneView.automaticallyUpdatesLighting = true
         self.sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints, ARSCNDebugOptions.showWorldOrigin]
         self.sceneView.delegate = self
         self.sceneView.session.run(configuration)
+        
+        self.collectionView.dataSource = self
+        self.collectionView.delegate = self
     }
     
     @IBAction func reset(_ sender: Any) {
@@ -55,7 +60,7 @@ private extension ViewController {
         let hitTest = sceneView.hitTest(tapLocation, types: .existingPlaneUsingExtent)
         if hitTest.isEmpty == false {
             addLogo(hitTestResult: hitTest.first)
-            self.infoLabel.text = "Pinch to resize the logo, or tap reset to place it somewhere else!"
+            self.infoLabel.text = "Pinch to resize the logo, or tap reset to place it somewhere else!\nTap below to change its texture!"
         }
     }
     
@@ -94,12 +99,41 @@ extension ViewController: ARSCNViewDelegate {
         guard anchor is ARPlaneAnchor else { return }
         
         DispatchQueue.main.async {  // UI changes *must* be done on the main thread!
+            self.sceneView.debugOptions = []
+            
             switch self.logo {
             case nil:
                 self.infoLabel.text = "Tap any horizontal surface to place the logo!"
             default:
-                self.infoLabel.text = "Pinch to resize the logo, or tap reset to place it somewhere else!"
+                self.infoLabel.text = "Pinch to resize the logo, or tap reset to place it somewhere else!\nTap below to change its texture!"
             }
         }
     }
 }
+
+extension ViewController: UICollectionViewDataSource {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return skins.count
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "skin", for: indexPath) as! SkinCell
+        cell.image.image = UIImage(named: "SXSW_Diffuse_\(self.skins[indexPath.row])")
+        return cell
+    }
+}
+
+extension ViewController: UICollectionViewDelegate {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard let logo = logo else { return }   // make sure we've placed a logo
+        
+        logo.geometry?.firstMaterial?.diffuse.contents = UIImage(named: "SXSW_Diffuse_\(self.skins[indexPath.row])")
+        logo.geometry?.firstMaterial?.normal.contents = UIImage(named: "SXSW_Normal_\(self.skins[indexPath.row])")
+        logo.geometry?.firstMaterial?.roughness.contents = UIImage(named: "SXSW_Roughness_\(self.skins[indexPath.row])")
+    }
+}
+
+
+
+
+
