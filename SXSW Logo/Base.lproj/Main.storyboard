@@ -73,12 +73,22 @@
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="PKh-qz-o9m" customClass="SnapshotButton" customModule="SXSW_Logo" customModuleProvider="target">
+                                <rect key="frame" x="16" y="20" width="44" height="44"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="44" id="EfN-rU-f4M"/>
+                                    <constraint firstAttribute="width" constant="44" id="U7V-zv-4Aa"/>
+                                </constraints>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="Upn-Be-1A6" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" id="30P-Gr-KVJ"/>
                             <constraint firstItem="LAW-Ki-3Za" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" id="69l-LI-cqX"/>
                             <constraint firstItem="Upn-Be-1A6" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="99m-bj-Kse"/>
+                            <constraint firstItem="PKh-qz-o9m" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="9sL-Nb-2IF"/>
+                            <constraint firstItem="PKh-qz-o9m" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="16" id="Ag0-Wx-NUV"/>
                             <constraint firstItem="ISn-XY-KkR" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="16" id="Dhw-aL-3Xn"/>
                             <constraint firstItem="LAW-Ki-3Za" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" id="E90-zB-BsD"/>
                             <constraint firstItem="Upn-Be-1A6" firstAttribute="bottom" secondItem="6Tk-OE-BBY" secondAttribute="bottom" id="L9c-4z-fI3"/>
@@ -96,6 +106,7 @@
                         <outlet property="collectionView" destination="Upn-Be-1A6" id="Roz-6g-ZFZ"/>
                         <outlet property="infoLabel" destination="ISn-XY-KkR" id="pfa-K4-HYv"/>
                         <outlet property="sceneView" destination="LAW-Ki-3Za" id="Hnm-xb-P2I"/>
+                        <outlet property="snapshot" destination="PKh-qz-o9m" id="SyV-Pv-bJ2"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>

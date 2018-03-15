@@ -8,11 +8,13 @@
 
 import UIKit
 import ARKit
+import Photos
 
 class ViewController: UIViewController {
 
     @IBOutlet weak var sceneView: ARSCNView!
     @IBOutlet weak var infoLabel: UILabel!
+    @IBOutlet weak var snapshot: SnapshotButton!
     @IBOutlet weak var collectionView: UICollectionView!
     
     let configuration = ARWorldTrackingConfiguration()
@@ -35,6 +37,8 @@ class ViewController: UIViewController {
         
         self.collectionView.dataSource = self
         self.collectionView.delegate = self
+        
+        self.snapshot.delegate = self
     }
     
     @IBAction func reset(_ sender: Any) {
@@ -92,6 +96,40 @@ private extension ViewController {
         
         self.logo = node
     }
+    
+    @IBAction func takeSnapshot(_ sender: Any) {
+        let takeSnapshotBlock = {
+            UIImageWriteToSavedPhotosAlbum(self.sceneView.snapshot(), nil, nil, nil)
+            DispatchQueue.main.async {
+                // Briefly flash the screen.
+                let flashOverlay = UIView(frame: self.sceneView.frame)
+                flashOverlay.backgroundColor = UIColor.white
+                self.sceneView.addSubview(flashOverlay)
+                UIView.animate(withDuration: 0.25, animations: {
+                    flashOverlay.alpha = 0.0
+                }, completion: { _ in
+                    flashOverlay.removeFromSuperview()
+                })
+            }
+        }
+        
+        switch PHPhotoLibrary.authorizationStatus() {
+        case .authorized:
+            takeSnapshotBlock()
+        case .restricted, .denied:
+            let title = "Photos access denied"
+            let message = "Please enable Photos access for this application in Settings > Privacy to allow saving screenshots."
+            let alert = UIAlertController(title: title, message: message, preferredStyle: UIAlertControllerStyle.alert)
+            self.present(alert, animated: true, completion: nil)
+        case .notDetermined:
+            PHPhotoLibrary.requestAuthorization({ (authorizationStatus) in
+                if authorizationStatus == .authorized {
+                    takeSnapshotBlock()
+                }
+            })
+        }
+    }
+    
 }
 
 extension ViewController: ARSCNViewDelegate {
@@ -134,6 +172,24 @@ extension ViewController: UICollectionViewDelegate {
 }
 
 
+extension ViewController: SnapshotButtonDelegate {
+    func countdownStarting() {
+        print("Countdown starting until snapshot taken")
+    }
+    
+    func countdown(remaining: Int) {
+        print("\(remaining) seconds until snapshot")
+    }
+    
+    func countdownStopped(at: Int) {
+        print("Countdown stopped early at \(at) remaining")
+    }
+    
+    func countdownFinished() {
+        print("Countdown finished, taking snapshot")
+        takeSnapshot(self.snapshot)
+    }
+}
 
 
 
