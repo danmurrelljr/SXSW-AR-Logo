@@ -53,8 +53,10 @@ private extension ViewController {
     func addGestureRecognizers() {
         let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(tapped))
         let pinchGestureRecognizer = UIPinchGestureRecognizer(target: self, action: #selector(pinched))
+        let longPressGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(longPressed))
         self.sceneView.addGestureRecognizer(tapGestureRecognizer)
         self.sceneView.addGestureRecognizer(pinchGestureRecognizer)
+        self.sceneView.addGestureRecognizer(longPressGestureRecognizer)
     }
     
     @objc func tapped(sender: UITapGestureRecognizer) {
@@ -64,7 +66,7 @@ private extension ViewController {
         let hitTest = sceneView.hitTest(tapLocation, types: .existingPlaneUsingExtent)
         if hitTest.isEmpty == false {
             addLogo(hitTestResult: hitTest.first)
-            self.infoLabel.text = "Pinch to resize the logo, or tap reset to place it somewhere else!\nTap below to change its texture!"
+            self.infoLabel.text = "Pinch to resize the logo, long press to rotate it, or tap reset to place it somewhere else!\nTap below to change its texture!\nOr just tap the shutter to take its picture!"
         }
     }
     
@@ -79,6 +81,23 @@ private extension ViewController {
                 let pinchAction = SCNAction.scale(by: sender.scale, duration: 0)
                 node.runAction(pinchAction)
                 sender.scale = 1.0              // reset scale because pinch grows exponentially
+            }
+        }
+    }
+    
+    @objc func longPressed(sender: UILongPressGestureRecognizer) {
+        guard let _ = logo else { return }      // ignore long presses if we have not already placed a logo
+        guard let sceneView = sender.view as? ARSCNView else { return }
+        let tapLocation = sender.location(in: sceneView)
+        let hitTest = sceneView.hitTest(tapLocation)
+        if hitTest.isEmpty == false {
+            let results = hitTest.first!
+            if sender.state == .began {
+                let action = SCNAction.rotateBy(x: 0, y: CGFloat(360.degreesToRadians), z: 0, duration: 3)
+                let forever = SCNAction.repeatForever(action)
+                results.node.runAction(forever)
+            } else if sender.state == .ended {
+                results.node.removeAllActions()
             }
         }
     }
@@ -143,7 +162,7 @@ extension ViewController: ARSCNViewDelegate {
             case nil:
                 self.infoLabel.text = "Tap any horizontal surface to place the logo!"
             default:
-                self.infoLabel.text = "Pinch to resize the logo, or tap reset to place it somewhere else!\nTap below to change its texture!"
+                self.infoLabel.text = "Pinch to resize the logo, long press to rotate it, or tap reset to place it somewhere else!\nTap below to change its texture!\nOr just tap the shutter to take its picture!"
             }
         }
     }
@@ -191,5 +210,8 @@ extension ViewController: SnapshotButtonDelegate {
     }
 }
 
+extension Int {
+    var degreesToRadians: Double { return Double(self) * .pi/180}
+}
 
 
