@@ -31,7 +31,7 @@ class ViewController: UIViewController {
         
         self.sceneView.autoenablesDefaultLighting = true
         self.sceneView.automaticallyUpdatesLighting = true
-        self.sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints, ARSCNDebugOptions.showWorldOrigin]
+        self.sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]
         self.sceneView.delegate = self
         self.sceneView.session.run(configuration)
         
@@ -46,6 +46,7 @@ class ViewController: UIViewController {
         logo.removeFromParentNode()
         self.logo = nil
         self.infoLabel.text = "Tap any horizontal surface to place the logo!"
+        self.sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]
     }
 }
 
@@ -111,8 +112,9 @@ private extension ViewController {
         let thirdColumn = transform.columns.3
         
         node.position = SCNVector3(thirdColumn.x, thirdColumn.y, thirdColumn.z)
+        self.sceneView.debugOptions = []
         self.sceneView.scene.rootNode.addChildNode(node)
-        
+
         self.logo = node
     }
     
@@ -156,8 +158,6 @@ extension ViewController: ARSCNViewDelegate {
         guard anchor is ARPlaneAnchor else { return }
         
         DispatchQueue.main.async {  // UI changes *must* be done on the main thread!
-            self.sceneView.debugOptions = []
-            
             switch self.logo {
             case nil:
                 self.infoLabel.text = "Tap any horizontal surface to place the logo!"
