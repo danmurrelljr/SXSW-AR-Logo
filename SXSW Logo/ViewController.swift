@@ -27,12 +27,14 @@ class ViewController: UIViewController {
         
         addGestureRecognizers()
         
+        configuration.isLightEstimationEnabled = true
         configuration.planeDetection = .horizontal
         
-        self.sceneView.autoenablesDefaultLighting = true
+        self.sceneView.autoenablesDefaultLighting = false
         self.sceneView.automaticallyUpdatesLighting = true
         self.sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]
         self.sceneView.delegate = self
+        self.sceneView.scene.lightingEnvironment.contents = UIImage(named: "Old City Centre")
         self.sceneView.session.run(configuration)
         
         self.collectionView.dataSource = self
@@ -166,6 +168,14 @@ extension ViewController: ARSCNViewDelegate {
             }
         }
     }
+    
+    func renderer(_ renderer: SCNSceneRenderer, updateAtTime time: TimeInterval) {
+        guard let estimate = self.sceneView.session.currentFrame?.lightEstimate else { return }
+        
+        // use an estimate of our lighting intensity to modify our own lighting
+        let intensity: CGFloat = estimate.ambientIntensity / 1000
+        self.sceneView.scene.lightingEnvironment.intensity = intensity
+    }
 }
 
 extension ViewController: UICollectionViewDataSource {
@@ -184,6 +194,7 @@ extension ViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let logo = logo else { return }   // make sure we've placed a logo
         
+        logo.geometry?.firstMaterial?.lightingModel = .physicallyBased
         logo.geometry?.firstMaterial?.diffuse.contents = UIImage(named: "SXSW_Diffuse_\(self.skins[indexPath.row])")
         logo.geometry?.firstMaterial?.normal.contents = UIImage(named: "SXSW_Normal_\(self.skins[indexPath.row])")
         logo.geometry?.firstMaterial?.roughness.contents = UIImage(named: "SXSW_Roughness_\(self.skins[indexPath.row])")
