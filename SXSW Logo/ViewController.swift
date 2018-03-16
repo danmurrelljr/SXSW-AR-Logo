@@ -56,10 +56,10 @@ private extension ViewController {
     func addGestureRecognizers() {
         let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(tapped))
         let pinchGestureRecognizer = UIPinchGestureRecognizer(target: self, action: #selector(pinched))
-        let longPressGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(longPressed))
+        let rotateGestureRecognizer = UIRotationGestureRecognizer(target: self, action: #selector(rotated))
         self.sceneView.addGestureRecognizer(tapGestureRecognizer)
         self.sceneView.addGestureRecognizer(pinchGestureRecognizer)
-        self.sceneView.addGestureRecognizer(longPressGestureRecognizer)
+        self.sceneView.addGestureRecognizer(rotateGestureRecognizer)
     }
     
     @objc func tapped(sender: UITapGestureRecognizer) {
@@ -69,7 +69,7 @@ private extension ViewController {
         let hitTest = sceneView.hitTest(tapLocation, types: .existingPlaneUsingExtent)
         if hitTest.isEmpty == false {
             addLogo(hitTestResult: hitTest.first)
-            self.infoLabel.text = "Pinch to resize the logo, long press to rotate it, or tap reset to place it somewhere else!\nTap below to change its texture!\nOr just tap the shutter to take its picture!"
+            self.infoLabel.text = "Pinch to resize the logo, two-finger twist to rotate it, or tap reset to place it somewhere else!\nTap below to change its texture!\nOr just tap the shutter to take its picture!"
         }
     }
     
@@ -88,19 +88,18 @@ private extension ViewController {
         }
     }
     
-    @objc func longPressed(sender: UILongPressGestureRecognizer) {
-        guard let _ = logo else { return }      // ignore long presses if we have not already placed a logo
+    @objc func rotated(sender: UIRotationGestureRecognizer) {
+        guard let _ = logo else { return }   // ignore rotation if we have not already placed a logo
         guard let sceneView = sender.view as? ARSCNView else { return }
         let tapLocation = sender.location(in: sceneView)
         let hitTest = sceneView.hitTest(tapLocation)
-        if hitTest.isEmpty == false {
-            let results = hitTest.first!
-            if sender.state == .began {
-                let action = SCNAction.rotateBy(x: 0, y: CGFloat(360.degreesToRadians), z: 0, duration: 3)
-                let forever = SCNAction.repeatForever(action)
-                results.node.runAction(forever)
-            } else if sender.state == .ended {
-                results.node.removeAllActions()
+        if let result = hitTest.first, let name = result.node.name {
+            // make sure we're rotating our logo, and we've begun or changed rotation
+            if name == "SXSW_Logo" && (sender.state == .began || sender.state == .changed) {
+                let node = result.node
+                let rotateAction = SCNAction.rotateBy(x: 0.0, y: sender.rotation, z: 0.0, duration: 0)
+                node.runAction(rotateAction)
+                sender.rotation = 0.0           // reset rotation because it grows exponentially
             }
         }
     }
@@ -164,7 +163,7 @@ extension ViewController: ARSCNViewDelegate {
             case nil:
                 self.infoLabel.text = "Tap any horizontal surface to place the logo!"
             default:
-                self.infoLabel.text = "Pinch to resize the logo, long press to rotate it, or tap reset to place it somewhere else!\nTap below to change its texture!\nOr just tap the shutter to take its picture!"
+                self.infoLabel.text = "Pinch to resize the logo, two-finger twist to rotate it, or tap reset to place it somewhere else!\nTap below to change its texture!\nOr just tap the shutter to take its picture!"
             }
         }
     }
